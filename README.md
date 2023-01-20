@@ -6,7 +6,7 @@
     
     linktree - https://linktr.ee/northeastdynamics?utm_source=linktree_profile_share&ltsid=438e8906-d0f4-4633-8aa1-c1cef8d514de
     
-  -HighSchool "Regina Maria" Dorohoi,Botosani,(Romania)-
+     -HighSchool "Regina Maria" Dorohoi,Botosani,(Romania)-
   
             ~About us~
         -rr2 first season
@@ -14,11 +14,6 @@
         -RO FTC Quantum Robotics Traditional DEMO 2021 -> Winning Alliance-Captain
         -RO FTC NATIONAL CHAMPIONSHIP HYBRID 2021-> Winning Alliance - 2nd Team Selected
         
-  
-  
-  *Ned inspection :)
-        -4* Motors Gobilda 312
-        -6* Servos Gobilda dgaf
-        -Webcam Logitech idk 
+ 
   
   
