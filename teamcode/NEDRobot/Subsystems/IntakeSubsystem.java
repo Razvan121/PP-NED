@@ -3,87 +3,94 @@ package org.firstinspires.ftc.teamcode.NEDRobot.Subsystems;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class IntakeSubsystem extends SubsystemBase {
-
-    public Servo barRight,barLeft;
     public Servo claw;
-
-    private final ElapsedTime timer;
-
-    public static double claw_close=0.46,claw_open=0.52;
-    public static double fourbar_extended=0;
-    public static double fourbar_retracted=0;
-    public static double fourbar_score=0;
-
-
-    public enum ClawState{
+    public Servo intake1;
+    public Servo intake2;
+    private double closePos=0.47;
+    private double openPos=0.49;
+    private double fourbar_intake_pos=0.62;
+    private double fourbar_transition_pos=0.58;
+    private double fourbar_deposit_pos=0.5;
+    public enum ClawState {
+        CLOSE,
         OPEN,
-        CLOSE;
-
+    }
+    public enum FourbarState{
+        INTAKE,
+        TRANSITION,
+        DEPOSIT
     }
 
-    public enum FourBarState{
-        EXTENDED,
-        RETRACTED,
-        SCORE;
+    public IntakeSubsystem(HardwareMap hardwareMap,boolean isAuto) {
+        this.claw = hardwareMap.get(Servo.class, "claw");
+        this.intake1 = hardwareMap.get(Servo.class, "intake1");
+        this.intake2 = hardwareMap.get(Servo.class, "intake2");
+        this.intake1.setDirection(Servo.Direction.REVERSE);
+
+        if(isAuto)
+        {
+            update(ClawState.CLOSE);
+            update(FourbarState.INTAKE);
+        }
+        else
+        {
+            update(ClawState.OPEN);
+        }
     }
-
-    public IntakeSubsystem(HardwareMap hardwareMap, boolean isAuto)
-    {
-        this.barLeft = hardwareMap.get(Servo.class,"barLeft");
-        this.barRight = hardwareMap.get(Servo.class,"barRight");
-        this.claw = hardwareMap.get(Servo.class,"claw");
-        this.timer = new ElapsedTime();
-        timer.reset();
-
-    }
-
     public void update(ClawState state)
     {
         switch (state){
-            case OPEN:
-                claw.setPosition(claw_open);
-                break;
             case CLOSE:
-                claw.setPosition(claw_close);
+                claw.setPosition(closePos);
+                break;
+            case OPEN:
+                claw.setPosition(openPos);
                 break;
         }
     }
-
-    public void update(FourBarState state){
+    public void update(FourbarState state)
+    {
         switch (state){
-            case SCORE:
-                setFourbar(fourbar_score);
+            case INTAKE:
+                setFourbar(fourbar_intake_pos);
                 break;
-            case EXTENDED:
-                setFourbar(fourbar_extended);
+            case TRANSITION:
+                setFourbar(fourbar_transition_pos);
                 break;
-            case RETRACTED:
-                setFourbar(fourbar_retracted);
+            case DEPOSIT:
+                setFourbar(fourbar_deposit_pos);
+                break;
         }
     }
-
     public void setFourbar(double pos)
     {
-        barRight.setPosition(pos);
-        barLeft.setPosition(1-pos+0.05);
+        intake1.setPosition(pos);
+        intake2.setPosition(pos+0.005);
     }
-
 
     public void setFourbarFactor(double factor) {
-        double fourbarAddition = -0.01 * factor;
-        double barLeftPos = barLeft.getPosition();
-        if (!(barLeftPos + fourbarAddition > fourbar_retracted) || !(barLeftPos - fourbarAddition < fourbar_extended)) {
-            barLeft.setPosition(barLeftPos + fourbarAddition);
-            barRight.setPosition(1 - barLeftPos + fourbarAddition);
+        double intakeAddition = 0.0008 * factor;
+        double intakePos = getAvgIntakePosition();
+        if (!(intakePos + intakeAddition >fourbar_intake_pos ) || !(intakePos - intakeAddition < fourbar_deposit_pos)) {
+            setFourbar(intakePos + intakeAddition);
         }
     }
-
-    public void resetTimer() {
-        timer.reset();
+    public double getClawPosition()
+    {
+        return claw.getPosition();
     }
-
-
+    public double getIntake1Position()
+    {
+        return intake1.getPosition();
+    }
+    public double getIntake2Position()
+    {
+        return intake2.getPosition();
+    }
+    public double getAvgIntakePosition()
+    {
+        return (getIntake1Position()+getIntake2Position())/2;
+    }
 }

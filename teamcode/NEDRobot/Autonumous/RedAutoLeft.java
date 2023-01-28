@@ -11,9 +11,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.NEDRobot.Commands.FollowTrajectoryCommand;
+import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.GeneralCommands.FollowTrajectoryCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -110,7 +110,7 @@ public class RedAutoLeft extends OpMode {
 
         ftcDashboard = FtcDashboard.getInstance();
 
-        sampleMecanumDrive.odometrySubsystem.DownOdometry();
+        //sampleMecanumDrive..DownOdometry();
 
         //localizer
         sampleMecanumDrive.getLocalizer().setPoseEstimate(POSE_START);

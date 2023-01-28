@@ -1,30 +1,51 @@
 package org.firstinspires.ftc.teamcode.NEDRobot.Subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Config
 public class OdometrySubsystem extends SubsystemBase {
 
-    private Servo Left,Right,Front;
+    private Servo LeftOdo,RightOdo,FrontOdo;
+    public enum OdoState {
+        UP,
+        DOWN
+    }
+    private double odo_up_pos=1;
+    private double odo_close_pos=1;
 
-    public OdometrySubsystem(HardwareMap hardwareMap){
-        this.Left = hardwareMap.get(Servo.class,"Left");
-        this.Right = hardwareMap.get(Servo.class,"Right");
-        this.Front = hardwareMap.get(Servo.class,"Front");
+    public OdometrySubsystem(HardwareMap hardwareMap,boolean isAuto){
+        this.LeftOdo = hardwareMap.get(Servo.class,"LeftOdo");
+        this.RightOdo = hardwareMap.get(Servo.class,"RightOdo");
+        this.FrontOdo = hardwareMap.get(Servo.class,"FrontOdo");
+
+        if(isAuto)
+        {
+            update(OdoState.DOWN);
+        }
+        else
+        {
+            update(OdoState.UP);
+        }
     }
 
-    public void UpOdometry()
+    public void update(OdoState state)
     {
-        Left.setPosition(1);
-        Right.setPosition(1);
-        Front.setPosition(1);
+        switch (state){
+            case UP:
+                setOdo(odo_up_pos);
+                break;
+            case DOWN:
+                setOdo(odo_close_pos);
+                break;
+        }
     }
-    public void DownOdometry()
+    public void setOdo(double pos)
     {
-        Left.setPosition(0);
-        Right.setPosition(0);
-        Front.setPosition(0);
+        LeftOdo.setPosition(pos);
+        RightOdo.setPosition(pos);
+        FrontOdo.setPosition(pos);
     }
-
 }

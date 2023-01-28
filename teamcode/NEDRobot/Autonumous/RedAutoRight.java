@@ -10,11 +10,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.NEDRobot.Commands.FollowTrajectoryCommand;
-import org.firstinspires.ftc.teamcode.NEDRobot.Robot;
+import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.GeneralCommands.FollowTrajectoryCommand;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.IntakeSubsystem;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
 
@@ -22,7 +22,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 public class RedAutoRight extends LinearOpMode  {
 
     private SampleMecanumDrive sampleMecanumDrive;
-    private Robot robot;
+    private BaseRobot robot;
     private FtcDashboard ftcDashboard;
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -71,7 +71,7 @@ public class RedAutoRight extends LinearOpMode  {
         sampleMecanumDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sampleMecanumDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        robot = new Robot(hardwareMap,true);
+        robot = new BaseRobot(hardwareMap,true);
 
         // TRAJECTORY
 
@@ -113,7 +113,7 @@ public class RedAutoRight extends LinearOpMode  {
                 .build();
 
 
-        sampleMecanumDrive.odometrySubsystem.DownOdometry();
+       // sampleMecanumDrive.odometrySubsystem.DownOdometry();
         robot.intakeSubsystem.update(IntakeSubsystem.ClawState.CLOSE);
 
         waitForStart();
@@ -124,7 +124,7 @@ public class RedAutoRight extends LinearOpMode  {
 
         camera.stopStreaming();
 
-        sampleMecanumDrive.odometrySubsystem.DownOdometry();
+        //sampleMecanumDrive.odometrySubsystem.DownOdometry();
 
         //localizer
         sampleMecanumDrive.getLocalizer().setPoseEstimate(POSE_START);
