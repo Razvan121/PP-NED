@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 @Config
+
 public class TestIntake extends OpMode {
     public Servo intake1,intake2;
     public static double pos1=0.5,pos2=0.5;
@@ -32,17 +33,14 @@ public class TestIntake extends OpMode {
 
         //pos1 = 0.4
         //pos2 = 1-0.601 = 0.399
-
-
+        //p1=52
+        //p2=665
 
     }
     @Override
     public void loop(){
-
-
-
         intake1.setPosition(pos1);
-        intake2.setPosition(pos1+0.005  );//1-pos1
+        intake2.setPosition(pos1);//1-pos1
         telemetry.addData("Pos1",intake1.getPosition());
         telemetry.addData("Pos2",intake2.getPosition());
         telemetry.update();

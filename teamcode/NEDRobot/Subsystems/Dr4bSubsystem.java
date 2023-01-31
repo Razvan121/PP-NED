@@ -22,18 +22,12 @@ public class Dr4bSubsystem extends SubsystemBase {
         FAILED_RETRACT
     }
 
-    private int HighJunctionPos = 2450;
-    private int MidJunctionPos = 1540;
-    private int LowJunctionPos = 365;
-    private int GroundJunctionPos = 400;
-    private int HomePos = 0;
-
     public MotionProfile profile;
     public MotionState currentState;
-    public static double P=0.023;
-    public static double I=0.8;
-    public static double D=0.6;
-    public static double F=0;
+    public static double P=0.005;
+    public static double I=0.2;
+    public static double D=0.001;
+    public static double F=0.0003;
 
     private ElapsedTime timer;
     private ElapsedTime voltageTimer;
@@ -102,12 +96,16 @@ public class Dr4bSubsystem extends SubsystemBase {
         return targetPosition;
     }
 
-    public void setDr4bFactor(int factor) {
-        int dr4bAddition = 5 * factor;
-        int newPosition = dr4bPosition + dr4bAddition;
-        // if (newPosition >= -15 && newPosition <= 6700) {
+    public void setDr4bFactor(double factor) {
+        double dr4bAddition = -factor;
+        if(dr4bAddition>0)
+            dr4bAddition=-25*factor;
+        else
+            dr4bAddition=-factor;
+        double newPosition = dr4bPosition + dr4bAddition;
+        if (newPosition >= -15 && newPosition <= 2500) {
         targetPosition=newPosition;
-        // }
+         }
     }
     public void resetTimer(){
         timer.reset();

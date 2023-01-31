@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.Dr4bSubsystem;
 import org.firstinspires.ftc.teamcode.NEDRobot.autoCommands.TeleOPDR4BCommand;
 
 @TeleOp(name = "TestDrive2")
+@Disabled
 public class TestDrive2 extends CommandOpMode {
     //private SampleMecanumDrive drive;
     private BaseRobot robot;

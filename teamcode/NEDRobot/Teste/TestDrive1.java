@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.NEDRobot.Teste;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
 import java.text.DecimalFormat;
 
 @TeleOp(name = "TestDrive1")
+@Disabled
 public class TestDrive1 extends LinearOpMode {
 
     private SampleMecanumDrive drive1;

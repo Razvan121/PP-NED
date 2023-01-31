@@ -6,14 +6,19 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoDepositCommand;
+import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.ExtendDR4BCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.GeneralCommands.FollowTrajectoryCommand;
-import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
+import org.firstinspires.ftc.teamcode.NEDRobot.autoCommands.AutoPickConeCommand;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -27,8 +32,15 @@ public class RedAutoLeft extends OpMode {
 
     private SampleMecanumDrive sampleMecanumDrive;
     private FtcDashboard ftcDashboard;
+    private BaseRobot robot;
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
+
+    private double fourbarFIRSTCONE= 0.54;
+    private  double fourbarSECONDCONE=0.55;
+    private double fourbarTHIRDCONE=0.56;
+    private double fourbarFOURTHCONE=0.57;
+    private double fourbarLASTCONE = 0.58;
 
     static final double FEET_PER_METER = 3.28084;
 
@@ -85,6 +97,9 @@ public class RedAutoLeft extends OpMode {
         sampleMecanumDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sampleMecanumDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        robot = new BaseRobot(hardwareMap,true);
+
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -106,6 +121,7 @@ public class RedAutoLeft extends OpMode {
         });
         FtcDashboard.getInstance().startCameraStream(camera, 30);
 
+
         telemetry.setMsTransmissionInterval(50);
 
         ftcDashboard = FtcDashboard.getInstance();
@@ -121,19 +137,29 @@ public class RedAutoLeft extends OpMode {
 
         //trajectory pick up
 
-        //pick1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[0])
-        //pick2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[1])
-        //pick3 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[2])
-        //pick4 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[3])
-        //pick5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[4])
+        pick1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[0])
+                .build();
+        pick2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[1])
+                .build();
+        pick3 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[2])
+                .build();
+        pick4 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[3])
+                .build();
+        pick5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[4])
+                .build();
 
         //trajectory drop
 
-        // drop1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[0])
-        //drop2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[1])
-        // drop3 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[2])
-        // drop4 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[3])
-        // drop5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[4])]
+       drop1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[0])
+               .build();
+       drop2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[1])
+               .build();
+       drop3 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[2])
+               .build();
+       drop4 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[3])
+                 .build();
+       drop5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[4])
+               .build();
 
         ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
 
@@ -212,17 +238,19 @@ public class RedAutoLeft extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new FollowTrajectoryCommand(sampleMecanumDrive,preload_drop)
-                                .alongWith(),
+                                .alongWith(new ExtendDR4BCommand(robot, 1600)).andThen(new WaitCommand(500))
+                                .andThen(new AutoDepositCommand(robot)),
 
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,pick1)
-                                .alongWith(),
+                                .alongWith(new AutoPickConeCommand(robot,fourbarFIRSTCONE)),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,drop1)
-                                .alongWith(),
+                                .alongWith(new ExtendDR4BCommand(robot, 1600)).andThen(new WaitCommand(500))
+                                .andThen(new AutoDepositCommand(robot)),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,pick2)
-                                .alongWith(),
+                                .alongWith(new AutoPickConeCommand(robot,fourbarSECONDCONE)),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,drop2)
                                 .alongWith(),

@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.NEDRobot.autoCommands.TeleOPDR4BCommand;
 
 @Config
 @TeleOp(name="dr4b")
+@Disabled
 public class Testdr4b extends CommandOpMode {
 
     public static int position=0;
