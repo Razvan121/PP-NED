@@ -97,13 +97,9 @@ public class Dr4bSubsystem extends SubsystemBase {
     }
 
     public void setDr4bFactor(double factor) {
-        double dr4bAddition = -factor;
-        if(dr4bAddition>0)
-            dr4bAddition=-25*factor;
-        else
-            dr4bAddition=-factor;
+        double dr4bAddition = 25*factor;
         double newPosition = dr4bPosition + dr4bAddition;
-        if (newPosition >= -15 && newPosition <= 2500) {
+        if (newPosition >= -15 && newPosition <= 1600 && currentState.getV()==0 ) {
         targetPosition=newPosition;
          }
     }

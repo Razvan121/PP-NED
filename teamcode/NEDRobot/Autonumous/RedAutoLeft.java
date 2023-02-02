@@ -18,7 +18,6 @@ import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.GeneralCommands.Fo
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
-import org.firstinspires.ftc.teamcode.NEDRobot.autoCommands.AutoPickConeCommand;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -243,14 +242,14 @@ public class RedAutoLeft extends OpMode {
 
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,pick1)
-                                .alongWith(new AutoPickConeCommand(robot,fourbarFIRSTCONE)),
+                                .alongWith(),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,drop1)
                                 .alongWith(new ExtendDR4BCommand(robot, 1600)).andThen(new WaitCommand(500))
                                 .andThen(new AutoDepositCommand(robot)),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,pick2)
-                                .alongWith(new AutoPickConeCommand(robot,fourbarSECONDCONE)),
+                                .alongWith(),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,drop2)
                                 .alongWith(),

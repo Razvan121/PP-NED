@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class TestIntake extends OpMode {
     public Servo intake1,intake2;
-    public static double pos1=0.5,pos2=0.5;
+    public static double pos1=0.05,pos2=0.07;
     public double pos2_deposit=0.4,pos2_intake=0.55;
     @Override
     public void init(){
@@ -21,26 +21,12 @@ public class TestIntake extends OpMode {
         intake2 =  hardwareMap.get(Servo.class,"intake2");
         intake1.setDirection(Servo.Direction.REVERSE);
         //intake2.setDirection(Servo.Direction.REVERSE);
-    //    pos1=0.455  pos2=0.532
-
-
-        // pos1 == pos2 => pos2 = 0.532,pos1 = 0.4
-        // pos2 = 0.4 , pos1 = 0.601
-
-
-        //pos1 = 0.43 creste
-        //pos2 = 1-0.569 = 0.431
-
-        //pos1 = 0.4
-        //pos2 = 1-0.601 = 0.399
-        //p1=52
-        //p2=665
 
     }
     @Override
     public void loop(){
         intake1.setPosition(pos1);
-        intake2.setPosition(pos1);//1-pos1
+        intake2.setPosition(pos2);//1-pos1
         telemetry.addData("Pos1",intake1.getPosition());
         telemetry.addData("Pos2",intake2.getPosition());
         telemetry.update();

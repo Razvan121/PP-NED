@@ -10,11 +10,11 @@ import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.IntakeSubsystem;
 public class AutoDepositCommand extends SequentialCommandGroup {
     public AutoDepositCommand(BaseRobot robot){
         super(
-                new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.JUNCTION)),
-                new WaitCommand(250),
                 new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.ClawState.OPEN)),
+                new WaitCommand(300),
+                new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_INTAKE)),
                 new WaitCommand(200),
-                new RetractDR4BCommand(robot,250)
+                new RetractDR4BCommand(robot,100)
         );
     }
 }

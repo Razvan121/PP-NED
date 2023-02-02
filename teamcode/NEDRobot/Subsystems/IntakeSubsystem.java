@@ -11,14 +11,23 @@ public class IntakeSubsystem extends SubsystemBase {
 
 
     private double closePos=0.44;
-    private double openPos=0.51;
+    private double openPos=0.52;
 
-    private double fourbar_intake_pos=0.62;
-    private  double fourbar_transition_intake_pos =0.60;
-    private double fourbar_transition_deposit_pos = 0.55;
-    private double fourbar_deposit_pos=0.52;
-    private double fourbar_junction_pos = 0.51;
 
+    public double intake1TransitionIntake_Pos = 0.275;
+    public double intake2TransitionIntake_Pos = 0.119;
+
+    public double intake1Intake_Pos=0.12;
+    public double intake2Intake_Pos=0.094;
+
+    public double intake1TransitionDeposit_Pos=0.51;
+    public double intake2TransitionDeposit_Pos=0.152;
+
+    public double intake1Deposit_Pos=0.65;
+    public double intake2Deposit_Pos=0.171;
+
+    public double intake1Junction_Pos=0.74;
+    public double intake2Junction_Pos=0.189;
 
 
 
@@ -29,11 +38,11 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum FourbarState{
         INTAKE,
         TRANSITION_INTAKE,
-        JUNCTION,
+        TRANSITION_DEPOSIT,
         DEPOSIT,
-        TRANSITION_DEPOSIT
-    }
+        JUNCTION
 
+    }
 
     public IntakeSubsystem(HardwareMap hardwareMap,boolean isAuto) {
         this.claw = hardwareMap.get(Servo.class, "claw");
@@ -44,12 +53,12 @@ public class IntakeSubsystem extends SubsystemBase {
         if(isAuto)
         {
             update(ClawState.CLOSE);
-            update(FourbarState.INTAKE);
+            update(FourbarState.TRANSITION_INTAKE);
         }
         else
         {
-            update(ClawState.OPEN);
-            update(FourbarState.TRANSITION_DEPOSIT);
+            update(ClawState.CLOSE);
+            update(FourbarState.TRANSITION_INTAKE);
         }
     }
     public void update(ClawState state)
@@ -67,26 +76,30 @@ public class IntakeSubsystem extends SubsystemBase {
     {
         switch (state){
             case INTAKE:
-                setFourbar(fourbar_intake_pos);
+                setFourbar(intake1Intake_Pos,intake2Intake_Pos);
                 break;
             case TRANSITION_INTAKE:
-                setFourbar(fourbar_transition_intake_pos);
+                setFourbar(intake1TransitionIntake_Pos,intake2TransitionIntake_Pos);
                 break;
             case TRANSITION_DEPOSIT:
-                setFourbar(fourbar_transition_deposit_pos);
+                setFourbar(intake1TransitionDeposit_Pos,intake2TransitionDeposit_Pos);
+                break;
+
+            case DEPOSIT:
+                setFourbar(intake1Deposit_Pos,intake2Deposit_Pos);
                 break;
             case JUNCTION:
-                setFourbar(fourbar_junction_pos);
-                break;
-            case DEPOSIT:
-                setFourbar(fourbar_deposit_pos);
+                setFourbar(intake1Junction_Pos,intake2Junction_Pos);
         }
     }
-    public void setFourbar(double pos)
+
+
+    public void setFourbar(double pos1,double pos2)
     {
-        intake1.setPosition(pos);
-        intake2.setPosition(pos+0.007);
+        intake1.setPosition(pos1);
+        intake2.setPosition(pos2);
     }
+
 
     public void setFourbarFactor(double factor) {
         double intakeAddition = -0.0008 * factor;

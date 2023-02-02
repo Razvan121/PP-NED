@@ -8,12 +8,13 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoDepositCommand;
-import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoDriver1Command;
-import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoTakeFourBarCommand;
+import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoIntakePos;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.ExtendDR4BCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.IntakeSubsystem;
@@ -25,22 +26,22 @@ public class CommandRegional extends CommandOpMode {
     private double loopTime = 0;
     private BaseRobot robot;
 
-    private  int HighJunctionPos =  1700;
+    private  int HighJunctionPos =  1450;
     private  int MidJunctionPos = 1000;//1000;
+    private  int LowJunctionPos = 450;//1000;
     private int GroundJunctionPos = 200;
-    private int HomePos = 250;
-
+    private int HomePos = 100;
     private InstantCommand closeClawCommand;
     private InstantCommand openClawCommand;
     private InstantCommand FourBarIntakeCommand;
     private InstantCommand FourBarDepositCommand;
-    private InstantCommand FourBarTransitionCommand;
+    private InstantCommand FourBarTransitionIntakeCommand;
     private InstantCommand FourBarJunctionCommand;
-    private InstantCommand FourBarTransitionDriveCommand;
+    private InstantCommand FourBarTransitionDepositCommand;
 
     public boolean Scoring;
     public boolean InJunction = false;
-
+    public boolean junc=false;
 
 
     private ElapsedTime timer;
@@ -68,11 +69,11 @@ public class CommandRegional extends CommandOpMode {
 
         FourBarDepositCommand = new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.DEPOSIT));
 
-        FourBarTransitionCommand = new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_INTAKE));
+        FourBarTransitionIntakeCommand = new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_INTAKE));
 
         FourBarJunctionCommand = new InstantCommand(()-> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.JUNCTION));
 
-        FourBarTransitionDriveCommand  = new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT));
+        FourBarTransitionDepositCommand  = new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT));
 
         openClawCommand = new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.ClawState.OPEN));
 
@@ -83,6 +84,10 @@ public class CommandRegional extends CommandOpMode {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
+
+        PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        PhotonCore.experimental.setMaximumParallelCommands(8);
+        PhotonCore.enable();
 
     }
     @Override
@@ -122,12 +127,17 @@ public class CommandRegional extends CommandOpMode {
 
         if(gamepad1.left_bumper)
         {
-            schedule(new AutoTakeFourBarCommand(robot));
+            CommandScheduler.getInstance().schedule(new AutoIntakePos(robot));
         }
         if(gamepad1.right_bumper)
         {
-            schedule(new AutoDriver1Command(robot));
+            CommandScheduler.getInstance().schedule(new AutoDepositCommand(robot));
+            Scoring=true;
 
+        }
+        if(gamepad1.left_trigger>0.5)
+        {
+            schedule(FourBarJunctionCommand);
         }
 
         //////////////////////////////GAMEPAD2//////////////////////////////////////////////////////////
@@ -139,34 +149,46 @@ public class CommandRegional extends CommandOpMode {
 
         if(d2DU && !d2DR && !d2DL)
             schedule(FourBarDepositCommand);
-        else
-            if(d2DD && !d2DR && !d2DL)
-                schedule(FourBarIntakeCommand);
+        if(d2DD && !d2DR && !d2DL)
+            schedule(FourBarIntakeCommand);
+        if(d2DL && !d2DU && !d2DD)
+            schedule(FourBarTransitionIntakeCommand);
+        if(d2DR && !d2DU && !d2DD)
+            schedule(FourBarTransitionDepositCommand);
+
 
         if(gamepad2.left_bumper)
             schedule(closeClawCommand);
-        else
-            if(gamepad2.right_bumper)
-                schedule(openClawCommand);
 
 
+        if(gamepad2.right_bumper) {
+            schedule(openClawCommand);
+        }
+
+        if(gamepad2.right_trigger>0.5)
+        {
+            schedule(FourBarJunctionCommand);
+        }
+
+        if(gamepad2.left_trigger>0.5)
+        {
+            schedule(FourBarDepositCommand);
+        }
 
         if(gamepad2.y)
         {
             CommandScheduler.getInstance().schedule(new ExtendDR4BCommand(robot,HighJunctionPos));
-            InJunction = true;
             Scoring=true;
         }
         if(gamepad2.x)
         {
             schedule(new ExtendDR4BCommand(robot,MidJunctionPos));
-            InJunction = true;
             Scoring=true;
         }
+
         if(gamepad2.b)
         {
-            int lowJunctionPos = 450;
-            schedule(new ExtendDR4BCommand(robot, lowJunctionPos));
+            schedule(new ExtendDR4BCommand(robot, LowJunctionPos));
             Scoring=false;
         }
         if(gamepad2.a)
@@ -174,8 +196,10 @@ public class CommandRegional extends CommandOpMode {
             schedule(new AutoDepositCommand(robot));
             Scoring = false;
         }
-
-
+        if(Math.abs(gamepad2.left_stick_y)>0.3)
+        {
+            robot.dr4bSubsystem.setDr4bFactor(Math.pow(gamepad2.left_stick_y,3));
+        }
 
         robot.dr4bSubsystem.loop();
 
@@ -198,6 +222,8 @@ public class CommandRegional extends CommandOpMode {
         telemetry.addData("hz ", 1000000000 / (loop - loopTime));
         loopTime = loop;
         telemetry.update();
+
+        PhotonCore.CONTROL_HUB.clearBulkCache();
     }
     @Override
     public void reset() {
@@ -215,10 +241,6 @@ public class CommandRegional extends CommandOpMode {
 
     public double dead(double x, double k) {
         return Math.abs(x) > k ? x : 0;
-    }
-
-    private double joystickScalar(double num, double min) {
-        return Math.signum(num) * min + (1 - min) * Math.pow(Math.abs(num), 3) * Math.signum(num);
     }
 
 }

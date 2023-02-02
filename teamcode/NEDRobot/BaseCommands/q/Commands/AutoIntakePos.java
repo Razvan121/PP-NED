@@ -7,13 +7,14 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.IntakeSubsystem;
 
-public class AutoTakeFourBarCommand extends SequentialCommandGroup {
-    public AutoTakeFourBarCommand(BaseRobot robot){
+public class AutoIntakePos extends SequentialCommandGroup {
+    public AutoIntakePos(BaseRobot robot){
         super(
+                new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.INTAKE)),
+                new WaitCommand(500),
                 new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.ClawState.CLOSE)),
-                new WaitCommand(300),
-                new InstantCommand(()-> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.DEPOSIT))
+                new WaitCommand(400),
+                new InstantCommand(() ->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT))
         );
-
     }
 }
