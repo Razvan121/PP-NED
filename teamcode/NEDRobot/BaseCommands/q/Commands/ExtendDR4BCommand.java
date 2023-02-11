@@ -16,7 +16,7 @@ public class ExtendDR4BCommand extends ParallelCommandGroup {
                 new WaitCommand(300),
                 new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.DEPOSIT)),
                 new WaitCommand(500),
-                new Dr4bGeneralCommand(robot.dr4bSubsystem,position,3000,2500,10, 1000, Dr4bSubsystem.STATE.FAILED_EXTEND)
+                new Dr4bGeneralCommand(robot.dr4bSubsystem,position,10000,10000,10, 1000, Dr4bSubsystem.STATE.FAILED_EXTEND)
         );
     }
 }

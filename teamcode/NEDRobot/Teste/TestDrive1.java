@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.NEDRobot.drive.SampleMecanumDrive;
 
 import java.text.DecimalFormat;
 

@@ -11,9 +11,9 @@ public class AutoIntakePos extends SequentialCommandGroup {
     public AutoIntakePos(BaseRobot robot){
         super(
                 new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.INTAKE)),
-                new WaitCommand(500),
+                new WaitCommand(450),
                 new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.ClawState.CLOSE)),
-                new WaitCommand(400),
+                new WaitCommand(300),
                 new InstantCommand(() ->robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT))
         );
     }

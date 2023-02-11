@@ -22,6 +22,7 @@
 package org.firstinspires.ftc.teamcode.NEDRobot.Vision;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -32,7 +33,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
-
+@Disabled
 @TeleOp
 public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 {
@@ -180,7 +181,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
 
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
-        while (opModeIsActive()) {sleep(20);}
+
     }
 
     void tagToTelemetry(AprilTagDetection detection)

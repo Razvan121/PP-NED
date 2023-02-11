@@ -6,6 +6,8 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.NEDRobot.drive.SampleMecanumDrive;
+
 public class BaseRobot {
     public OdometrySubsystem odometrySubsystem;
     public IntakeSubsystem intakeSubsystem;
@@ -29,7 +31,7 @@ public class BaseRobot {
             imu.initialize(parameters);
         }
 
-        //this.odometrySubsystem = new OdometrySubsystem(hardwareMap, isAuto);
+        this.odometrySubsystem = new OdometrySubsystem(hardwareMap, isAuto);
         this.intakeSubsystem = new IntakeSubsystem(hardwareMap, isAuto);
         this.dr4bSubsystem = new Dr4bSubsystem(hardwareMap, isAuto);
         this.drive = new SampleMecanumDrive(hardwareMap);

@@ -9,16 +9,15 @@ import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoDepositCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.ExtendDR4BCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.GeneralCommands.FollowTrajectoryCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
-import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.NEDRobot.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.NEDRobot.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -68,7 +67,7 @@ public class RedAutoLeft extends OpMode {
     public static Pose2d POSE_START = new Pose2d(0,0,toRadians(0));
 
     public static Pose2d[] CYCLE_DROP = new Pose2d[]{
-            new Pose2d(0,0,toRadians(0)),//preload
+            new Pose2d(48,0,toRadians(0)),//preload
             new Pose2d(0,0,toRadians(0)),//pick1
             new Pose2d(0,0,toRadians(0)),//pick2
             new Pose2d(0,0,toRadians(0)),//pick3
@@ -91,10 +90,7 @@ public class RedAutoLeft extends OpMode {
 
     @Override
     public void init() {
-        //Robot robot = new Robot(hardwareMap,true);
         sampleMecanumDrive =  new SampleMecanumDrive(hardwareMap);
-        sampleMecanumDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        sampleMecanumDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         robot = new BaseRobot(hardwareMap,true);
 
@@ -132,11 +128,13 @@ public class RedAutoLeft extends OpMode {
 
         //trajectory
 
-        //preload_drop = sampleMecanumDrive.trajectorySequenceBuilder(POSE_START)
+        preload_drop = sampleMecanumDrive.trajectorySequenceBuilder(POSE_START)
+                .lineToLinearHeading(CYCLE_DROP[0],toRadians(30))
+                .build();
 
         //trajectory pick up
 
-        pick1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[0])
+       /* pick1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[0])
                 .build();
         pick2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[1])
                 .build();
@@ -159,6 +157,8 @@ public class RedAutoLeft extends OpMode {
                  .build();
        drop5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[4])
                .build();
+
+        */
 
         ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
 
@@ -229,6 +229,7 @@ public class RedAutoLeft extends OpMode {
     public void start()
     {
 
+        telemetry.addLine("start");
 
 
         telemetry.update();
@@ -238,10 +239,10 @@ public class RedAutoLeft extends OpMode {
                 new SequentialCommandGroup(
                         new FollowTrajectoryCommand(sampleMecanumDrive,preload_drop)
                                 .alongWith(new ExtendDR4BCommand(robot, 1600)).andThen(new WaitCommand(500))
-                                .andThen(new AutoDepositCommand(robot)),
+                                .andThen(new AutoDepositCommand(robot))
 
 
-                        new FollowTrajectoryCommand(sampleMecanumDrive,pick1)
+                       /* new FollowTrajectoryCommand(sampleMecanumDrive,pick1)
                                 .alongWith(),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,drop1)
@@ -273,6 +274,8 @@ public class RedAutoLeft extends OpMode {
                                 .alongWith(),
 
                         new FollowTrajectoryCommand(sampleMecanumDrive,park)
+
+                        */
                 )
 
         );

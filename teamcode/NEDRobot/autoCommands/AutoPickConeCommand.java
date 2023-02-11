@@ -8,10 +8,10 @@ import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoTakeF
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 
 public class AutoPickConeCommand extends SequentialCommandGroup {
-    public AutoPickConeCommand(BaseRobot robot,double position1,double position2){
+    public AutoPickConeCommand(BaseRobot robot,double position){
         super(
                 new SequentialCommandGroup(
-                    new InstantCommand(()->robot.intakeSubsystem.setFourbar(position1,position2)),
+                    new InstantCommand(()->robot.intakeSubsystem.setFourbar(position,position)),
                         new WaitCommand(500),
                         new AutoTakeFourBarCommand(robot)
                 )

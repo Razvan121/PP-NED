@@ -6,11 +6,11 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.NEDRobot.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.NEDRobot.trajectorysequence.TrajectorySequence;
 
-public class FollowTrajectoryCommand extends CommandBase {
+public class FollowTrajectoryCommandPark extends CommandBase {
     private SampleMecanumDrive drive;
     private TrajectorySequence traj;
 
-    public FollowTrajectoryCommand(SampleMecanumDrive sampleMecanumDrive, TrajectorySequence trajectorySequence) {
+    public FollowTrajectoryCommandPark(SampleMecanumDrive sampleMecanumDrive, TrajectorySequence trajectorySequence,int position) {
         drive = sampleMecanumDrive;
         traj = trajectorySequence;
     }

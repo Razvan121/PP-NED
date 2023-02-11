@@ -10,24 +10,25 @@ public class IntakeSubsystem extends SubsystemBase {
     public Servo intake2;
 
 
-    private double closePos=0.44;
-    private double openPos=0.52;
+    private double closePos=0.48;
+    private double openPos=0.53;
 
 
-    public double intake1TransitionIntake_Pos = 0.275;
-    public double intake2TransitionIntake_Pos = 0.119;
+  public static double intake_Pos1 = 0.18;
+  public static double intake_Pos2 = 0.18;
+  public static  double intakeTransitionIntake_Pos1 = 0.37;
+  public static double intakeTransitionIntake_Pos2 = 0.37;
+  public static double intakeTransitionDeposit_Pos1 =0.56;
+  public static double intakeTransitionDeposit_Pos2 =0.56;
+  public static double intakeDeposit_Pos1 =0.71;
+  public static double intakeDeposit_Pos2 =0.71;
+  public static double intakeJunction_Pos1 = 0.76;
+  public static double intakeJunction_Pos2 = 0.76;
 
-    public double intake1Intake_Pos=0.12;
-    public double intake2Intake_Pos=0.094;
+  public int offset = 0;
+  public double offset2= 0;
 
-    public double intake1TransitionDeposit_Pos=0.51;
-    public double intake2TransitionDeposit_Pos=0.152;
 
-    public double intake1Deposit_Pos=0.65;
-    public double intake2Deposit_Pos=0.171;
-
-    public double intake1Junction_Pos=0.74;
-    public double intake2Junction_Pos=0.189;
 
 
 
@@ -53,12 +54,11 @@ public class IntakeSubsystem extends SubsystemBase {
         if(isAuto)
         {
             update(ClawState.CLOSE);
-            update(FourbarState.TRANSITION_INTAKE);
         }
         else
         {
-            update(ClawState.CLOSE);
-            update(FourbarState.TRANSITION_INTAKE);
+            update(ClawState.OPEN);
+            update(FourbarState.TRANSITION_DEPOSIT);
         }
     }
     public void update(ClawState state)
@@ -76,23 +76,29 @@ public class IntakeSubsystem extends SubsystemBase {
     {
         switch (state){
             case INTAKE:
-                setFourbar(intake1Intake_Pos,intake2Intake_Pos);
+                setFourbar(intake_Pos1,intake_Pos2);
                 break;
             case TRANSITION_INTAKE:
-                setFourbar(intake1TransitionIntake_Pos,intake2TransitionIntake_Pos);
+                setFourbar(intakeTransitionIntake_Pos1,intakeTransitionIntake_Pos2);
                 break;
             case TRANSITION_DEPOSIT:
-                setFourbar(intake1TransitionDeposit_Pos,intake2TransitionDeposit_Pos);
+                setFourbar(intakeTransitionDeposit_Pos1,intakeTransitionDeposit_Pos2);
                 break;
-
             case DEPOSIT:
-                setFourbar(intake1Deposit_Pos,intake2Deposit_Pos);
+                setFourbar(intakeDeposit_Pos1,intakeDeposit_Pos2);
                 break;
             case JUNCTION:
-                setFourbar(intake1Junction_Pos,intake2Junction_Pos);
+                setFourbar(intakeJunction_Pos1,intakeJunction_Pos2 );
+                break;
         }
     }
 
+    public void setIntakeFactor(double factor) {
+        double IntakeAddition = 0.001 * factor;
+        double IntakePos1 = getIntake1Position();
+        double IntakePos2 = getIntake2Position();
+            setFourbar(IntakePos1,IntakePos2);
+    }
 
     public void setFourbar(double pos1,double pos2)
     {
@@ -100,14 +106,22 @@ public class IntakeSubsystem extends SubsystemBase {
         intake2.setPosition(pos2);
     }
 
-
+/*
     public void setFourbarFactor(double factor) {
         double intakeAddition = -0.0008 * factor;
         double intakePos = getAvgIntakePosition();
-        //if (!(intakePos + intakeAddition >fourbar_intake_pos ) || !(intakePos - intakeAddition < fourbar_deposit_pos)) {
+        if (!(intakePos + intakeAddition > intake_Pos1) || !(intake_Pos1 - intakeAddition < intakeDeposit_Pos1)) {
             intake1.setPosition(intakePos + intakeAddition);
             intake2.setPosition(intakePos + intakeAddition);
 
+        }
+    }
+
+ */
+
+    public void adjustPivotOffset( double offset)
+    {
+        this.offset2+= offset;
     }
     public double getClawPosition()
     {

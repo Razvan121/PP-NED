@@ -8,16 +8,17 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.outoftheboxrobotics.photoncore.PhotonCore;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoDepositCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoIntakePos;
+import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoRetractCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.ExtendDR4BCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
 import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.IntakeSubsystem;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.OdometrySubsystem;
+
 
 @Config
 @TeleOp(name = "OpModeRegional", group = "Regionala")
@@ -26,22 +27,25 @@ public class CommandRegional extends CommandOpMode {
     private double loopTime = 0;
     private BaseRobot robot;
 
-    private  int HighJunctionPos =  1450;
-    private  int MidJunctionPos = 1000;//1000;
-    private  int LowJunctionPos = 450;//1000;
+    private  int HighJunctionPos =  1680;
+    private  int MidJunctionPos = 1150;//1000;
+    private  int LowJunctionPos = 620;//1000;
     private int GroundJunctionPos = 200;
-    private int HomePos = 100;
+    private int HomePos = 0;
     private InstantCommand closeClawCommand;
     private InstantCommand openClawCommand;
     private InstantCommand FourBarIntakeCommand;
     private InstantCommand FourBarDepositCommand;
     private InstantCommand FourBarTransitionIntakeCommand;
+
     private InstantCommand FourBarJunctionCommand;
     private InstantCommand FourBarTransitionDepositCommand;
 
     public boolean Scoring;
     public boolean InJunction = false;
     public boolean junc=false;
+
+    public boolean ClawClose = false;
 
 
     private ElapsedTime timer;
@@ -57,12 +61,17 @@ public class CommandRegional extends CommandOpMode {
         robot = new BaseRobot(hardwareMap,false);
         robot.reset();
 
+        robot.intakeSubsystem.offset2 = 0;
+
+        robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT);
+        robot.intakeSubsystem.update(IntakeSubsystem.ClawState.CLOSE);
+
 
         OdoDownCommand = new InstantCommand(() ->{
-            //robot.odometrySubsystem.update(OdometrySubsystem.OdoState.DOWN);
+            robot.odometrySubsystem.update(OdometrySubsystem.OdoState.DOWN);
         });
         OdoUpCommand = new InstantCommand(() ->{
-            // robot.odometrySubsystem.update(OdometrySubsystem.OdoState.UP);
+             robot.odometrySubsystem.update(OdometrySubsystem.OdoState.UP);
         });
 
         FourBarIntakeCommand = new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.INTAKE));
@@ -85,9 +94,9 @@ public class CommandRegional extends CommandOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
-        PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        PhotonCore.experimental.setMaximumParallelCommands(8);
-        PhotonCore.enable();
+
+
+
 
     }
     @Override
@@ -101,28 +110,28 @@ public class CommandRegional extends CommandOpMode {
 
         if(Scoring) {
             robot.drive.setWeightedDrivePower(
-                    new Pose2d(dead(scale(GamepadEx1.getLeftY(), 0.6), 0) * 0.4,
-                            dead(-scale(GamepadEx1.getLeftX(), 0.6), 0) * 0.4,
-                            -GamepadEx1.getRightX()* 0.4
+                    new Pose2d(dead(scale(GamepadEx1.getLeftY(), 0.6), 0) * 0.3,
+                            dead(-scale(GamepadEx1.getLeftX(), 0.6), 0) * 0.3,
+                            -GamepadEx1.getRightX()* 0.3
                     )
             );
         }
         else
         {
             robot.drive.setWeightedDrivePower(
-                    new Pose2d(dead(scale(GamepadEx1.getLeftY(), 0.6), 0) * (gamepad1.right_trigger > 0.5 ? 0.5 : 0.8),
-                            dead(-scale(GamepadEx1.getLeftX(), 0.6), 0) * (gamepad1.right_trigger > 0.5 ? 0.5 : 0.8),
+                    new Pose2d(dead(scale(GamepadEx1.getLeftY(), 0.6), 0) * (gamepad1.right_trigger > 0.5 ? 0.5 : 1),
+                            dead(-scale(GamepadEx1.getLeftX(), 0.6), 0) * (gamepad1.right_trigger > 0.5 ? 0.5 : 1),
                             -GamepadEx1.getRightX()
                     )
             );
         }
 
 
-        boolean resetEncoder = gamepad1.dpad_down;
+        boolean Scoringoff = gamepad1.dpad_down;
 
-        if(resetEncoder)
+        if(gamepad1.dpad_down)
         {
-            robot.dr4bSubsystem.dr4b_motor.resetEncoder();
+            Scoring=false;
         }
 
         if(gamepad1.left_bumper)
@@ -132,13 +141,23 @@ public class CommandRegional extends CommandOpMode {
         if(gamepad1.right_bumper)
         {
             CommandScheduler.getInstance().schedule(new AutoDepositCommand(robot));
-            Scoring=true;
+            Scoring=false;
 
         }
         if(gamepad1.left_trigger>0.5)
         {
             schedule(FourBarJunctionCommand);
         }
+
+        if(gamepad1.a)
+        {
+            robot.intakeSubsystem.adjustPivotOffset(+0.03);
+        }
+        else
+            if(gamepad1.x)
+            {
+                robot.intakeSubsystem.adjustPivotOffset(-0.03);
+            }
 
         //////////////////////////////GAMEPAD2//////////////////////////////////////////////////////////
 
@@ -147,14 +166,28 @@ public class CommandRegional extends CommandOpMode {
         boolean d2DL = gamepad2.dpad_left;
         boolean d2DR = gamepad2.dpad_right;
 
-        if(d2DU && !d2DR && !d2DL)
+        if(d2DU && !d2DR && !d2DL) {
             schedule(FourBarDepositCommand);
-        if(d2DD && !d2DR && !d2DL)
+
+        }
+
+        if(d2DD && !d2DR && !d2DL) {
             schedule(FourBarIntakeCommand);
-        if(d2DL && !d2DU && !d2DD)
-            schedule(FourBarTransitionIntakeCommand);
-        if(d2DR && !d2DU && !d2DD)
+
+        }
+
+
+        if(d2DL && !d2DU && !d2DD) {
             schedule(FourBarTransitionDepositCommand);
+
+        }
+
+        if(d2DR && !d2DU && !d2DD) {
+            schedule(FourBarTransitionIntakeCommand);
+
+        }
+
+
 
 
         if(gamepad2.left_bumper)
@@ -168,7 +201,7 @@ public class CommandRegional extends CommandOpMode {
         if(gamepad2.right_trigger>0.5)
         {
             schedule(FourBarJunctionCommand);
-        }
+                    }
 
         if(gamepad2.left_trigger>0.5)
         {
@@ -193,12 +226,18 @@ public class CommandRegional extends CommandOpMode {
         }
         if(gamepad2.a)
         {
-            schedule(new AutoDepositCommand(robot));
+            schedule(new AutoRetractCommand(robot));
             Scoring = false;
         }
-        if(Math.abs(gamepad2.left_stick_y)>0.3)
+
+
+        if(Math.abs(gamepad2.left_stick_x)>0.3)
         {
-            robot.dr4bSubsystem.setDr4bFactor(Math.pow(gamepad2.left_stick_y,3));
+            robot.dr4bSubsystem.setDr4bFactor(Math.pow(gamepad2.left_stick_x,3));
+        }
+        if(Math.abs(gamepad2.right_stick_x)>0.3)
+        {
+            robot.intakeSubsystem.setIntakeFactor(Math.pow(gamepad2.right_stick_x,3));
         }
 
         robot.dr4bSubsystem.loop();
@@ -223,7 +262,7 @@ public class CommandRegional extends CommandOpMode {
         loopTime = loop;
         telemetry.update();
 
-        PhotonCore.CONTROL_HUB.clearBulkCache();
+
     }
     @Override
     public void reset() {

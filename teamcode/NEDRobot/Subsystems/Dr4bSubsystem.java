@@ -24,10 +24,10 @@ public class Dr4bSubsystem extends SubsystemBase {
 
     public MotionProfile profile;
     public MotionState currentState;
-    public static double P=0.005;
-    public static double I=0.2;
-    public static double D=0.001;
-    public static double F=0.0003;
+    public static double P=0.02;
+    public static double I=0;
+    public static double D=0.0003;//0.0003;
+    public static double F=0.00025;//.00025;
 
     private ElapsedTime timer;
     private ElapsedTime voltageTimer;
@@ -42,10 +42,9 @@ public class Dr4bSubsystem extends SubsystemBase {
 
     public Dr4bSubsystem(HardwareMap hardwareMap,boolean isAuto) {
         this.dr4b_motor = new MotorEx(hardwareMap,"dr4b");
-
         if(isAuto)
         {
-            dr4b_motor.resetEncoder();
+           // this.dr4b_motor.resetEncoder();
         }
         this.timer = new ElapsedTime();
         timer.reset();
@@ -75,7 +74,7 @@ public class Dr4bSubsystem extends SubsystemBase {
             targetPosition= currentState.getX();
         }
 
-        power = controller.calculate(dr4bPosition,targetPosition)/ voltage*12 ;
+        power = controller.calculate(dr4bPosition,targetPosition)/ voltage*14 ;
     }
     public void read() {
         dr4bPosition=dr4b_motor.getCurrentPosition();
@@ -97,11 +96,10 @@ public class Dr4bSubsystem extends SubsystemBase {
     }
 
     public void setDr4bFactor(double factor) {
-        double dr4bAddition = 25*factor;
+        double dr4bAddition = 5*factor;
         double newPosition = dr4bPosition + dr4bAddition;
-        if (newPosition >= -15 && newPosition <= 1600 && currentState.getV()==0 ) {
+        //if (newPosition >= -15 && newPosition <= 1600 && currentState.getV()==0 ) {
         targetPosition=newPosition;
-         }
     }
     public void resetTimer(){
         timer.reset();

@@ -12,9 +12,12 @@ public class AutoDepositCommand extends SequentialCommandGroup {
         super(
                 new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.ClawState.OPEN)),
                 new WaitCommand(300),
-                new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_INTAKE)),
-                new WaitCommand(200),
-                new RetractDR4BCommand(robot,100)
+                new InstantCommand(()->robot.intakeSubsystem.update(IntakeSubsystem.ClawState.CLOSE)),
+                new WaitCommand(150),
+                new InstantCommand(() -> robot.intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT)),
+                new WaitCommand(150),
+                new RetractDR4BCommand(robot,0),
+                new InstantCommand(() ->robot.intakeSubsystem.update(IntakeSubsystem.ClawState.OPEN))
         );
     }
 }
