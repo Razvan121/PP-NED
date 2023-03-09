@@ -24,7 +24,7 @@ public class Dr4bSubsystem extends SubsystemBase {
 
     public MotionProfile profile;
     public MotionState currentState;
-    public static double P=0.02;
+    public static double P=0.02;//0.02
     public static double I=0;
     public static double D=0.0003;//0.0003;
     public static double F=0.00025;//.00025;
@@ -39,12 +39,11 @@ public class Dr4bSubsystem extends SubsystemBase {
     public double power=0;
     private double voltage;
 
-
-    public Dr4bSubsystem(HardwareMap hardwareMap,boolean isAuto) {
+    public Dr4bSubsystem(HardwareMap hardwareMap, boolean isAuto) {
         this.dr4b_motor = new MotorEx(hardwareMap,"dr4b");
         if(isAuto)
         {
-           // this.dr4b_motor.resetEncoder();
+            this.dr4b_motor.resetEncoder();
         }
         this.timer = new ElapsedTime();
         timer.reset();
@@ -52,8 +51,9 @@ public class Dr4bSubsystem extends SubsystemBase {
         this.voltageTimer = new ElapsedTime();
         voltageTimer.reset();
 
-        profile = MotionProfileGenerator.generateSimpleMotionProfile(new MotionState(1,0),new MotionState(0,0),30,25);
+            profile = MotionProfileGenerator.generateSimpleMotionProfile(new MotionState(1,0), new MotionState(0,0), 100,100);
 
+       // this.profile = new MotionProfile(0,1,new Constraints(0,0,0));
         this.controller = new PIDFController(P,I,D,F);
         controller.setPIDF(P,I,D,F);
 
@@ -68,13 +68,14 @@ public class Dr4bSubsystem extends SubsystemBase {
             voltage = voltageSensor.getVoltage();
             voltageTimer.reset();
         }
-        currentState=profile.get(timer.time());
-        if(currentState.getV() != 0)
+      currentState=profile.get(timer.time());
+        if (currentState.getV() != 0)
         {
             targetPosition= currentState.getX();
         }
 
-        power = controller.calculate(dr4bPosition,targetPosition)/ voltage*14 ;
+
+        power = controller.calculate(dr4bPosition,targetPosition)/ voltage*12 ;
     }
     public void read() {
         dr4bPosition=dr4b_motor.getCurrentPosition();
@@ -96,11 +97,13 @@ public class Dr4bSubsystem extends SubsystemBase {
     }
 
     public void setDr4bFactor(double factor) {
-        double dr4bAddition = 5*factor;
+        double dr4bAddition = 5 * factor;
         double newPosition = dr4bPosition + dr4bAddition;
-        //if (newPosition >= -15 && newPosition <= 1600 && currentState.getV()==0 ) {
-        targetPosition=newPosition;
+        if (currentState.getV() == 0) {
+            targetPosition = newPosition;
+        }
     }
+
     public void resetTimer(){
         timer.reset();
     }
@@ -109,5 +112,16 @@ public class Dr4bSubsystem extends SubsystemBase {
         profile = MotionProfileGenerator.generateSimpleMotionProfile(new MotionState(getDr4bPosition(),0),new MotionState(targetPos,0),max_v,max_a);
         resetTimer();
     }
+  /*  public void newProfile(double targetPos, double max_v, double max_a) {
+            this.newProfile(targetPos, max_v, max_a, max_a);
+        }
 
+
+        public void newProfile(double targetPos, double max_v, double max_a, double max_d) {
+            profile = new AsymmetricMotionProfile(getDr4bPosition(), targetPos, new Constraints(max_v, max_a, max_d));
+            resetTimer();
+        }
+
+
+   */
 }

@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.NEDRobot.drive.SampleMecanumDrive;
  * exercise is to ascertain whether the localizer has been configured properly (note: the pure
  * encoder localizer heading may be significantly off if the track width has not been tuned).
  */
-@Disabled
-@TeleOp(group = "drive")
+@TeleOp(group = "LocalizationTest")
+
 public class LocalizationTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
@@ -25,7 +25,7 @@ public class LocalizationTest extends LinearOpMode {
         OdometrySubsystem odometrySubsystem = new OdometrySubsystem(hardwareMap,true);
 
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+        odometrySubsystem.update(OdometrySubsystem.OdoState.DOWN);
         waitForStart();
 
         while (!isStopRequested()) {

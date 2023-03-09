@@ -10,23 +10,24 @@ public class IntakeSubsystem extends SubsystemBase {
     public Servo intake2;
 
 
-    private double closePos=0.48;
-    private double openPos=0.53;
+    private double closePos=0.9;
+    private double openPos=0.65;
 
-
-  public static double intake_Pos1 = 0.18;
-  public static double intake_Pos2 = 0.18;
-  public static  double intakeTransitionIntake_Pos1 = 0.37;
-  public static double intakeTransitionIntake_Pos2 = 0.37;
-  public static double intakeTransitionDeposit_Pos1 =0.56;
-  public static double intakeTransitionDeposit_Pos2 =0.56;
-  public static double intakeDeposit_Pos1 =0.71;
-  public static double intakeDeposit_Pos2 =0.71;
-  public static double intakeJunction_Pos1 = 0.76;
-  public static double intakeJunction_Pos2 = 0.76;
+  public static double intake_Pos1 = 0.76;//74
+  public static double intake_Pos2 = 0.76;
+  public static  double intakeTransitionIntake_Pos1 = 0.66;
+  public static double intakeTransitionIntake_Pos2 = 0.66;
+  public static double intakeTransitionDeposit_Pos1 =0.45;
+  public static double intakeTransitionDeposit_Pos2 =0.45;
+  public static double intakeDeposit_Pos1 =0.3;
+  public static double intakeDeposit_Pos2 =0.3;
+  public static double intakeJunction_Pos1 = 0.25;
+  public static double intakeJunction_Pos2 = 0.25;
 
   public int offset = 0;
   public double offset2= 0;
+
+    public FourbarState fourbarState = FourbarState.INTAKE;
 
 
 
@@ -36,20 +37,21 @@ public class IntakeSubsystem extends SubsystemBase {
         CLOSE,
         OPEN,
     }
+
+
     public enum FourbarState{
         INTAKE,
         TRANSITION_INTAKE,
         TRANSITION_DEPOSIT,
         DEPOSIT,
         JUNCTION
-
     }
 
     public IntakeSubsystem(HardwareMap hardwareMap,boolean isAuto) {
         this.claw = hardwareMap.get(Servo.class, "claw");
         this.intake1 = hardwareMap.get(Servo.class, "intake1");
         this.intake2 = hardwareMap.get(Servo.class, "intake2");
-        this.intake1.setDirection(Servo.Direction.REVERSE);
+        this.intake2.setDirection(Servo.Direction.REVERSE);
 
         if(isAuto)
         {
@@ -58,7 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
         else
         {
             update(ClawState.OPEN);
-            update(FourbarState.TRANSITION_DEPOSIT);
+            update(FourbarState.INTAKE);
         }
     }
     public void update(ClawState state)
@@ -74,6 +76,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
     public void update(FourbarState state)
     {
+        fourbarState  = state;
         switch (state){
             case INTAKE:
                 setFourbar(intake_Pos1,intake_Pos2);
@@ -100,26 +103,14 @@ public class IntakeSubsystem extends SubsystemBase {
             setFourbar(IntakePos1,IntakePos2);
     }
 
-    public void setFourbar(double pos1,double pos2)
+    public void setFourbar(double pos1, double pos2)
     {
         intake1.setPosition(pos1);
         intake2.setPosition(pos2);
     }
 
-/*
-    public void setFourbarFactor(double factor) {
-        double intakeAddition = -0.0008 * factor;
-        double intakePos = getAvgIntakePosition();
-        if (!(intakePos + intakeAddition > intake_Pos1) || !(intake_Pos1 - intakeAddition < intakeDeposit_Pos1)) {
-            intake1.setPosition(intakePos + intakeAddition);
-            intake2.setPosition(intakePos + intakeAddition);
 
-        }
-    }
-
- */
-
-    public void adjustPivotOffset( double offset)
+    public void adjustIntakeOffset( double offset)
     {
         this.offset2+= offset;
     }

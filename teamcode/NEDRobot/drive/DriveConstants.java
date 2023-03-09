@@ -57,7 +57,7 @@ public class DriveConstants {
      */
     public static double kV = 0.017;
     public static double kA = 0.0035;
-    public static double kStatic =0;
+    public static double kStatic = 0;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
@@ -70,25 +70,25 @@ public class DriveConstants {
      * Note from LearnRoadRunner.com:
      * The velocity and acceleration constraints were calculated based on the following equation:
      * ((MAX_RPM / 60) * GEAR_RATIO * WHEEL_RADIUS * 2 * Math.PI) * 0.85
-     * Resulting in 52.48291908330528 in/s.
+     * Resulting in 73.17330064499293 in/s.
      * This is only 85% of the theoretical maximum velocity of the bot, following the recommendation above.
      * This is capped at 85% because there are a number of variables that will prevent your bot from actually
      * reaching this maximum velocity: voltage dropping over the game, bot weight, general mechanical inefficiencies, etc.
      * However, you can push this higher yourself if you'd like. Perhaps raise it to 90-95% of the theoretically
-     * max velocity. The theoretically maximum velocity is 61.74461068624151 in/s.
+     * max velocity. The theoretically maximum velocity is 86.08623605293286 in/s.
      * Just make sure that your bot can actually reach this maximum velocity. Path following will be detrimentally
      * affected if it is aiming for a velocity not actually possible.
      *
      * The maximum acceleration is somewhat arbitrary and it is recommended that you tweak this yourself based on
      * actual testing. Just set it at a reasonable value and keep increasing until your path following starts
-     * to degrade. As of now, it simply mirrors the velocity, resulting in 52.48291908330528 in/s/s
+     * to degrade. As of now, it simply mirrors the velocity, resulting in 73.17330064499293 in/s/s
      *
      * Maximum Angular Velocity is calculated as: maximum velocity / trackWidth * (180 / Math.PI) but capped at 360°/s.
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
 
      */
     public static double MAX_VEL = 50;
-    public static double MAX_ACCEL = 50;//52.48291908330528
+    public static double MAX_ACCEL = 50;
     public static double MAX_ANG_VEL = Math.toRadians(165);
     public static double MAX_ANG_ACCEL = Math.toRadians(165);
 

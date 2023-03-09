@@ -11,24 +11,21 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Config
 
 public class TestOdo extends OpMode {
-    public Servo servo_odo1,servo_odo2,servo_odo3;
-    public static double pos1=0,pos2=0,pos3=0;
+    public Servo servo_odo1,servo_odo2;
+    public static double pos1=0,pos2=0;
     public double pos2_deposit=0.4,pos2_intake=0.55;
     @Override
     public void init(){
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         servo_odo1 =  hardwareMap.get(Servo.class,"FrontOdo");
         servo_odo2 =  hardwareMap.get(Servo.class,"LeftOdo");
-        servo_odo3 = hardwareMap.get(Servo.class,"RightOdo");
         servo_odo1.setDirection(Servo.Direction.REVERSE);
-        servo_odo3.setDirection(Servo.Direction.REVERSE);
 
     }
     @Override
     public void loop(){
         servo_odo1.setPosition(pos1);
         servo_odo2.setPosition(pos2);
-        servo_odo3.setPosition(pos3);
         //telemetry.addData("Pos1",intake1.getPosition());
         //telemetry.addData("Pos2",intake2.getPosition());
         telemetry.update();

@@ -2,20 +2,29 @@ package org.firstinspires.ftc.teamcode.NEDRobot.Autonumous;
 
 import static java.lang.Math.toRadians;
 
+import androidx.annotation.GuardedBy;
+
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.WaitCommand;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.AutoDepositCommand;
-import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.Commands.ExtendDR4BCommand;
 import org.firstinspires.ftc.teamcode.NEDRobot.BaseCommands.q.GeneralCommands.FollowTrajectoryCommand;
-import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.BaseRobot;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.IntakeSubsystem;
+import org.firstinspires.ftc.teamcode.NEDRobot.Subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.NEDRobot.Vision.AprilTagDetectionPipeline;
+import org.firstinspires.ftc.teamcode.NEDRobot.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.NEDRobot.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.NEDRobot.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
@@ -25,20 +34,36 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "RedAutoLeft", group="RED")
-public class RedAutoLeft extends OpMode {
+@Config
+@Disabled
+@Autonomous(name = "AutoLeft", group="RED")
+public class  RedAutoLeft extends LinearOpMode {
 
-    private SampleMecanumDrive sampleMecanumDrive;
     private FtcDashboard ftcDashboard;
-    private BaseRobot robot;
+    private IntakeSubsystem intakeSubsystem;
+    private OdometrySubsystem odometrySubsystem;
+    private SampleMecanumDrive drive;
+    DcMotorEx dr;
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
+    public double loopTime;
 
-    private double fourbarFIRSTCONE= 0.54;
-    private  double fourbarSECONDCONE=0.55;
-    private double fourbarTHIRDCONE=0.56;
-    private double fourbarFOURTHCONE=0.57;
-    private double fourbarLASTCONE = 0.58;
+
+    private double fourbarFIRSTCONE= 0.63;
+    private  double fourbarSECONDCONE=0.63;
+    private double fourbarTHIRDCONE=0.63;
+    private double fourbarFOURTHCONE=0.64;
+    private double fourbarLASTCONE = 0.64;
+
+    private final Object imuLock = new Object();
+    @GuardedBy("imuLock")
+    public BNO055IMU imu;
+    private double imuAngle = 0;
+    private Thread imuThread;
+
+
+    public int HighJunctionPos = 1500;
+
 
     static final double FEET_PER_METER = 3.28084;
 
@@ -58,17 +83,33 @@ public class RedAutoLeft extends OpMode {
     int MIDDLE = 2;
     int RIGHT= 3;
 
+    int position = 1;
+
     AprilTagDetection tagOfInterest = null;
 
     //TrajectorySequence
-    private TrajectorySequence preload_drop ,pick1,drop1,pick2,drop2,pick3,drop3,pick4,drop4,pick5,drop5,park;
+    private TrajectorySequence Beleaua;
+    private TrajectorySequence Spate;
+    private TrajectorySequence Pick1;
+    private TrajectorySequence Drop1;
+    private TrajectorySequence Pick2;
+    private TrajectorySequence Drop2;
+    private TrajectorySequence Pick3;
+    private TrajectorySequence Drop3;
+    private Trajectory Pick4;
+    private Trajectory Drop4;
+    private Trajectory Pick5;
+    private Trajectory Drop5;
+    private TrajectorySequence Park1;
+    private TrajectorySequence Park2;
+    private TrajectorySequence Park3;
 
     //Pose
     public static Pose2d POSE_START = new Pose2d(0,0,toRadians(0));
 
     public static Pose2d[] CYCLE_DROP = new Pose2d[]{
-            new Pose2d(48,0,toRadians(0)),//preload
-            new Pose2d(0,0,toRadians(0)),//pick1
+            new Pose2d(55,2.4,toRadians(14)),//preload
+            new Pose2d(49,0,toRadians(0)),//pick1
             new Pose2d(0,0,toRadians(0)),//pick2
             new Pose2d(0,0,toRadians(0)),//pick3
             new Pose2d(0,0,toRadians(0)),//pick4
@@ -84,16 +125,27 @@ public class RedAutoLeft extends OpMode {
             new Pose2d(0,0,toRadians(0)),//drop5
     };
 
-    public static Pose2d PARK = new Pose2d(0,0,toRadians(0));
-
+    public static Vector2d PARK = new Vector2d(52,-23);//-23
 
 
     @Override
-    public void init() {
-        sampleMecanumDrive =  new SampleMecanumDrive(hardwareMap);
+    public void runOpMode() throws RuntimeException{
+        CommandScheduler.getInstance().reset();
 
-        robot = new BaseRobot(hardwareMap,true);
+        dr = hardwareMap.get(DcMotorEx.class,"dr4b");
 
+        intakeSubsystem = new IntakeSubsystem(hardwareMap,true);
+        odometrySubsystem = new OdometrySubsystem(hardwareMap,true);
+        drive = new SampleMecanumDrive(hardwareMap);
+
+        intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_INTAKE);
+
+        synchronized (imuLock) {
+            imu = hardwareMap.get(BNO055IMU.class, "imu");
+            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+            parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+            imu.initialize(parameters);
+        }
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -105,7 +157,7 @@ public class RedAutoLeft extends OpMode {
             @Override
             public void onOpened()
             {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(800,448, OpenCvCameraRotation.SIDEWAYS_LEFT);
             }
 
             @Override
@@ -116,70 +168,88 @@ public class RedAutoLeft extends OpMode {
         });
         FtcDashboard.getInstance().startCameraStream(camera, 30);
 
-
         telemetry.setMsTransmissionInterval(50);
 
         ftcDashboard = FtcDashboard.getInstance();
 
-        //sampleMecanumDrive..DownOdometry();
+        startIMUThread(this);
 
         //localizer
-        sampleMecanumDrive.getLocalizer().setPoseEstimate(POSE_START);
+        drive.getLocalizer().setPoseEstimate(POSE_START);
 
         //trajectory
-
-        preload_drop = sampleMecanumDrive.trajectorySequenceBuilder(POSE_START)
-                .lineToLinearHeading(CYCLE_DROP[0],toRadians(30))
+        Beleaua = drive.trajectorySequenceBuilder(POSE_START)
+                .lineToConstantHeading(new Vector2d(70,0.5),
+                        drive.getVelocityConstraint(60,DriveConstants.MAX_ANG_VEL,DriveConstants.TRACK_WIDTH),
+                        drive.getAccelerationConstraint(60))
                 .build();
 
-        //trajectory pick up
 
-       /* pick1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[0])
-                .build();
-        pick2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[1])
-                .build();
-        pick3 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[2])
-                .build();
-        pick4 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[3])
-                .build();
-        pick5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_PICK[4])
+        Spate = drive.trajectorySequenceBuilder(Beleaua.end())
+                .setReversed(true)
+                .lineToConstantHeading(new Vector2d(50,0.5),
+                        drive.getVelocityConstraint(45,DriveConstants.MAX_ANG_VEL,DriveConstants.TRACK_WIDTH),
+                        drive.getAccelerationConstraint(45))
                 .build();
 
-        //trajectory drop
 
-       drop1 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[0])
-               .build();
-       drop2 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[1])
-               .build();
-       drop3 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[2])
-               .build();
-       drop4 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[3])
-                 .build();
-       drop5 = sampleMecanumDrive.trajectorySequenceBuilder(CYCLE_DROP[4])
-               .build();
+        ////////////////////////////PARK/////////////////////////////////////////////////////
 
-        */
+        Park1 = drive.trajectorySequenceBuilder(Spate.end())
+                .setReversed(false)
+                .strafeTo(new Vector2d(49,25))
+                .build();
 
-        ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+        Park2 = drive.trajectorySequenceBuilder(Spate.end())
+                .setReversed(false)
+                .strafeTo(new Vector2d(52,0))
+                .build();
 
-        if(currentDetections.size() != 0)
+        Park3 = drive.trajectorySequenceBuilder(Spate.end())
+                .setReversed(false)
+                .strafeTo(new Vector2d(51,-23))
+                .build();
+
+
+        while(!isStarted())
         {
-            boolean tagFound = false;
+            drive.update();
+            ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
 
-            for(AprilTagDetection tag : currentDetections)
+            if(currentDetections.size() != 0)
             {
-                if(tag.id == LEFT || tag.id == MIDDLE || tag.id == RIGHT)
+                boolean tagFound = false;
+
+                for(AprilTagDetection tag : currentDetections)
                 {
-                    tagOfInterest = tag;
-                    tagFound = true;
-                    break;
+                    if(tag.id == LEFT || tag.id == MIDDLE || tag.id == RIGHT)
+                    {
+                        tagOfInterest = tag;
+                        tagFound = true;
+                        break;
+                    }
                 }
-            }
 
-            if(tagFound)
-            {
-                telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
-                tagToTelemetry(tagOfInterest);
+                if(tagFound)
+                {
+                    telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
+                    tagToTelemetry(tagOfInterest);
+                }
+                else
+                {
+                    telemetry.addLine("Don't see tag of interest :(");
+
+                    if(tagOfInterest == null)
+                    {
+                        telemetry.addLine("(The tag has never been seen)");
+                    }
+                    else
+                    {
+                        telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                        tagToTelemetry(tagOfInterest);
+                    }
+                }
+
             }
             else
             {
@@ -194,105 +264,53 @@ public class RedAutoLeft extends OpMode {
                     telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
                     tagToTelemetry(tagOfInterest);
                 }
+
             }
 
-        }
-        else
-        {
-            telemetry.addLine("Don't see tag of interest :(");
-
-            if(tagOfInterest == null)
-            {
-                telemetry.addLine("(The tag has never been seen)");
-            }
-            else
-            {
-                telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
-                tagToTelemetry(tagOfInterest);
+            if(tagOfInterest == null || tagOfInterest.id == LEFT){
+                position = 1;
+            }else if(tagOfInterest.id == MIDDLE){
+                position =2;
+            }else{
+                position = 3;
             }
 
+
+            telemetry.addLine("start");
+            telemetry.update();
         }
 
-        if(tagOfInterest == null || tagOfInterest.id == LEFT){
-            PARK = new Pose2d(0,0,toRadians(0));
-        }else if(tagOfInterest.id == MIDDLE){
-            PARK = new Pose2d(0,0,toRadians(0));
-        }else{
-            PARK = new Pose2d(0,0,toRadians(0));
-        }
 
-        telemetry.update();
-
-
-    }
-    @Override
-    public void start()
-    {
-
-        telemetry.addLine("start");
-
-
-        telemetry.update();
-
+        waitForStart();
+        // camera.stopStreaming();
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                        new FollowTrajectoryCommand(sampleMecanumDrive,preload_drop)
-                                .alongWith(new ExtendDR4BCommand(robot, 1600)).andThen(new WaitCommand(500))
-                                .andThen(new AutoDepositCommand(robot))
-
-
-                       /* new FollowTrajectoryCommand(sampleMecanumDrive,pick1)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,drop1)
-                                .alongWith(new ExtendDR4BCommand(robot, 1600)).andThen(new WaitCommand(500))
-                                .andThen(new AutoDepositCommand(robot)),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,pick2)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,drop2)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,pick3)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,drop3)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,pick4)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,drop4)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,pick5)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,drop5)
-                                .alongWith(),
-
-                        new FollowTrajectoryCommand(sampleMecanumDrive,park)
-
-                        */
+                        new InstantCommand(()->intakeSubsystem.update(IntakeSubsystem.FourbarState.TRANSITION_DEPOSIT)),
+                        new FollowTrajectoryCommand(drive,Beleaua),
+                        new FollowTrajectoryCommand(drive,Spate),
+                        new FollowTrajectoryCommand(drive,position == 1? Park1 : position == 2?Park2 : Park3)
+                        //new InstantCommand(this::requestOpModeStop)
                 )
 
         );
+        //robot.reset();
+
+        while(opModeIsActive())
+        {
+            CommandScheduler.getInstance().run();
+            drive.update();
+          /*  telemetry.addData("X", drive.getPoseEstimate().getX());
+            telemetry.addData("Y", drive.getPoseEstimate().getY());
+            telemetry.addData("Heading", drive.getPoseEstimate().getHeading());
+            double loop = System.nanoTime();
+            telemetry.addData("hz", 1000000000/(loop-loopTime));
+            loopTime= loop;
+            telemetry.update();
+           */
+        }
     }
 
-    @Override
-    public void loop() {
-        CommandScheduler.getInstance().run();
-        sampleMecanumDrive.update();
-    }
-
-    @Override
-    public void stop()
-    {
-        CommandScheduler.getInstance().reset();
-        camera.closeCameraDevice();
-    }
 
     void tagToTelemetry(AprilTagDetection detection)
     {
@@ -304,4 +322,20 @@ public class RedAutoLeft extends OpMode {
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
+    public void update(int pos) {
+        dr.setTargetPosition(pos);
+        dr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        dr.setPower(0.8);
+    }
+    public void startIMUThread(LinearOpMode opMode) {
+        imuThread = new Thread(() -> {
+            while (!opMode.isStopRequested() && opMode.opModeIsActive()) {
+                synchronized (imuLock) {
+                    imuAngle = -imu.getAngularOrientation().firstAngle;
+                }
+            }
+        });
+        imuThread.start();
+    }
+
 }

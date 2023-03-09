@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.NEDRobot.Teste;
 
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -19,16 +21,28 @@ public class TestDrive1 extends LinearOpMode {
     private boolean last_right_bumper = false;
     private double powerFR, powerFL, powerRR, powerRL;
 
+    private GamepadEx GamepadEx1;
+
+
     @Override
     public void runOpMode() throws InterruptedException {
        // CommandScheduler.getInstance().reset();
          drive1 = new SampleMecanumDrive(hardwareMap);
+        GamepadEx1 = new GamepadEx(gamepad1);
+
 
         waitForStart();
 
         while (!isStopRequested()) {
-            takeControllerInput();
-            drive();
+            drive1.setWeightedDrivePower(
+                    new Pose2d(dead(scale(GamepadEx1.getLeftY(), 0.6), 0) * 0.3,
+                            dead(-scale(GamepadEx1.getLeftX(), 0.6), 0) * 0.3,
+                            -GamepadEx1.getRightX()* 0.3
+                    )
+            );
+
+            //takeControllerInput();
+            //drive();
             boolean upOdo = gamepad1.y;
             boolean downOdo = gamepad1.a;
 
@@ -86,4 +100,12 @@ public class TestDrive1 extends LinearOpMode {
         telemetry.addData("speed", df.format(speed));
         telemetry.update();
     }
+    public double scale(double x, double k) {
+        return (1 - k) * x + k * x * x * x;
+    }
+
+    public double dead(double x, double k) {
+        return Math.abs(x) > k ? x : 0;
+    }
+
 }

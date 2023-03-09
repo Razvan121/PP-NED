@@ -10,6 +10,7 @@ public class Dr4bGeneralCommand extends CommandBase {
     private double timeout;
     private double max_v;
     private double max_a;
+    private double max_d;
     private double allowed_error;
 
     private Dr4bSubsystem Dr4bSubsystem;
@@ -24,11 +25,26 @@ public class Dr4bGeneralCommand extends CommandBase {
         this.position = position;
         this.max_v = v;
         this.max_a = a;
+        this.max_d = 0;
         this.allowed_error = allowed_error;
         this.timeout = timeout;
         this.errorState = error;
     }
 
+  /*  public Dr4bGeneralCommand(Dr4bSubsystem Dr4bSubsystem, double position, double v, double a, double d,
+                              double allowed_error, double timeout, Dr4bSubsystem.STATE error)
+    {
+        this.Dr4bSubsystem = Dr4bSubsystem;
+        this.position = position;
+        this.max_v = v;
+        this.max_a = a;
+        this.max_d = d;
+        this.allowed_error = allowed_error;
+        this.timeout = timeout;
+        this.errorState = error;
+    }
+
+   */
 
     @Override
     public void execute() {

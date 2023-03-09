@@ -11,10 +11,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Config
 
 public class TestIntake extends OpMode {
-    public Servo intake1,intake2,claw;
+    public Servo intake1,intake2,claw,hook;
     public static double pos1=0,pos2=0;
-    public static double pos3 = 0;
-    public static double pos=0,open=0;
+    public static double pos=0;
 
     @Override
     public void init(){
@@ -22,21 +21,21 @@ public class TestIntake extends OpMode {
         intake1 =  hardwareMap.get(Servo.class,"intake1");
         intake2 =  hardwareMap.get(Servo.class,"intake2");
         claw = hardwareMap.get(Servo.class,"claw");
-        intake1.setDirection(Servo.Direction.REVERSE);
-        //intake2.setDirection(Servo.Direction.REVERSE);
-
+        intake2.setDirection(Servo.Direction.REVERSE);
     }
     @Override
     public void loop(){
 
-       intake1.setPosition(pos1);
-       intake2.setPosition(pos1);//1-pos1
+       intake1.setPosition(pos2);
+       intake2.setPosition(pos2);
        telemetry.addData("Pos1",intake1.getPosition());
        telemetry.addData("Pos2",intake2.getPosition());
 
 
         claw.setPosition(pos);
         telemetry.addData("pos",claw.getPosition());
+
+
         telemetry.update();
     }
 }
