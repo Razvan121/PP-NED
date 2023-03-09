@@ -13,6 +13,8 @@
         -RO FTC IASI Qualifying Tournament #3 REMOTE -> Top ranked, Control Award
         -RO FTC Quantum Robotics Traditional DEMO 2021 -> Winning Alliance-Captain
         -RO FTC NATIONAL CHAMPIONSHIP HYBRID 2021-> Winning Alliance - 2nd Team Selected
+        -RO BUCHAREST #1 - FTC Romania Qualifying Tournament ->  Control Award sponsored by Arm, Inc. 2nd Place
+        
         
  
   
